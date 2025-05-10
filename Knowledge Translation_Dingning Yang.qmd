@@ -1,0 +1,1454 @@
+---
+title: "Your Competitors' Secret Weapon Isn't Advertising, It's Play"
+subtitle: "Why Smart Marketers Are Turning Loyalty Programs into Addictive Games"
+author: "Dingning Yang"
+date: "2025-05-08"
+format: 
+ html:
+    toc: false
+    highlight-style: github
+    theme: cosmo
+    mainfont: "Source Sans Pro"
+    fontsize: 1.25em
+    linestretch: 1.5
+execute:
+  echo: false
+  warning: false
+  message: false
+
+
+---
+
+## The Failure of Traditional Loyalty Programs
+
+*"Every day I woke up, I was worried about our traditional loyalty program that failed to generate excitement. Despite the growth in our consumer base, only **12%** of clients actively engaged with our digital reward system. Most forgot to log in, didn't track their points, or simply didn't find the accumulation of 'bones' motivating enough."*
+
+*-- Louise, Owner of Furever Pet Care*
+
+```{r}
+#| label: setup
+#| include: false
+# Install required packages
+if(!require(tidyverse)){install.packages("tidyverse")}
+if(!require(ggplot2)){install.packages("ggplot2")}
+if(!require(htmlwidgets)){install.packages("htmlwidgets")}
+if(!require(plotly)){install.packages("plotly")}
+if(!require(crosstalk)){install.packages("crosstalk")}
+if(!require(htmltools)){install.packages("htmltools")}
+if(!require(DT)){install.packages("DT")}
+if(!require(shiny)){install.packages("shiny")}
+
+# List of required packages
+required_packages <- c("tidyverse", "ggplot2", "htmlwidgets", "plotly", "crosstalk", "htmltools", "DT", "shiny")
+
+# Load required packages
+lapply(required_packages, library, character.only = TRUE)
+set.seed(123)
+
+
+
+```
+
+::: {.text-center}
+**Traditional Loyalty Program at Furever Pet Care**
+:::
+
+
+```{r}
+#| label: generate traditional loyalty program
+#| out.width: "100%"
+#| panel: fill
+
+pet_css <- HTML("
+<style>
+  .pet-loyalty {
+    font-family: 'Nunito', 'Helvetica Neue', Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    background: #f7f5f0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 2px dashed #7e5539;
+  }
+  
+  .loyalty-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .logo {
+    width: 70px;
+    height: 70px;
+    background: #7e5539; /* Brown */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+  }
+  
+  .user-info {
+    text-align: right;
+  }
+  
+  .username {
+    font-weight: bold;
+    font-size: 22px;
+    margin-bottom: 5px;
+    color: #7e5539;
+  }
+  
+  .status {
+    font-size: 16px;
+    color: #b08968;
+    font-style: italic;
+  }
+  
+  .current-bones {
+    margin: 20px 0;
+    font-size: 18px;
+  }
+  
+  .bones-container {
+    position: relative;
+    height: 120px;
+    margin: 30px 0;
+  }
+  
+  .progress-bar {
+    height: 15px;
+    background: #f0e6d8;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 20px;
+    position: relative;
+    border: 2px solid #dcc7ab;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #b08968 0%, #7e5539 100%);
+    border-radius: 8px;
+    transition: width 1s ease;
+  }
+  
+  .bone-markers {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+  }
+  
+  .marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .bone {
+    width: 40px;
+    height: 30px;
+    background: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #7e5539;
+    color: #7e5539;
+    font-weight: bold;
+    margin-bottom: 5px;
+    position: relative;
+  }
+  
+  .bone:before, .bone:after {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background: white;
+    border: 2px solid #7e5539;
+    border-radius: 50%;
+  }
+  
+  .bone:before {
+    left: -8px;
+    top: 6px;
+  }
+  
+  .bone:after {
+    right: -8px;
+    top: 6px;
+  }
+  
+  .bone.active {
+    background: #7e5539;
+    color: white;
+  }
+  
+  .bone.active:before, .bone.active:after {
+    background: #7e5539;
+    border-color: #dcc7ab;
+  }
+  
+  .bone-label {
+    font-size: 12px;
+    color: #7e5539;
+  }
+  
+  .rewards-section {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    border: 2px solid #dcc7ab;
+  }
+  
+  .rewards-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #7e5539;
+  }
+  
+  .rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+  }
+  
+  .reward-card {
+    background: #f9f5f0;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    border: 2px solid #dcc7ab;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .reward-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(126, 85, 57, 0.2);
+  }
+  
+  .reward-bones {
+    font-weight: bold;
+    margin-top: 10px;
+    color: #7e5539;
+  }
+  
+  .reward-name {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+  }
+  
+  .action-btn {
+    padding: 12px 25px;
+    border-radius: 30px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-history {
+    background: white;
+    color: #7e5539;
+    border: 2px solid #7e5539;
+  }
+  
+  .btn-history:hover {
+    background: #f0e6d8;
+  }
+  
+  .btn-redeem {
+    background: #7e5539;
+    color: white;
+  }
+  
+  .btn-redeem:hover {
+    background: #6a462f;
+  }
+  
+  .paw-print {
+    display: inline-block;
+    font-size: 18px;
+    transform: rotate(10deg);
+    margin-right: 5px;
+  }
+</style>
+")
+
+# Create the HTML structure for the pet loyalty program
+pet_html <- HTML("
+<div class='pet-loyalty'>
+  <div class='loyalty-header'>
+    <div class='logo'>AC</div>
+    <div class='user-info'>
+      <div class='username'>Thelma</div>
+      <div class='status'>Furever Pet Care</div>
+    </div>
+  </div>
+  
+  <div class='current-bones'>
+    <h3>You have <span style='color: #7e5539; font-weight: bold;'>175</span> Bones</h3>
+  </div>
+  
+  <div class='bones-container'>
+    <div class='progress-bar'>
+      <div class='progress-fill' style='width: 70%;'></div>
+    </div>
+    
+    <div class='bone-markers'>
+      <div class='marker'>
+        <div class='bone active'>25</div>
+        <div class='bone-label'>Treats</div>
+      </div>
+      <div class='marker'>
+        <div class='bone active'>50</div>
+        <div class='bone-label'>Toy</div>
+      </div>
+      <div class='marker'>
+        <div class='bone active'>150</div>
+        <div class='bone-label'>Grooming</div>
+      </div>
+      <div class='marker'>
+        <div class='bone'>200</div>
+        <div class='bone-label'>Premium Food</div>
+      </div>
+      <div class='marker'>
+        <div class='bone'>400</div>
+        <div class='bone-label'>Deluxe Bed</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class='rewards-section'>
+    <div class='rewards-title'><span class='paw-print'>🐾</span>Available Rewards</div>
+    <div class='rewards-grid'>
+      <div class='reward-card'>
+        <div class='reward-bones'>25 🦴</div>
+        <div class='reward-name'>Gourmet Dog Treats</div>
+      </div>
+      <div class='reward-card'>
+        <div class='reward-bones'>50 🦴</div>
+        <div class='reward-name'>Squeaky Toy</div>
+      </div>
+      <div class='reward-card'>
+        <div class='reward-bones'>100 🦴</div>
+        <div class='reward-name'>Nail Trimming</div>
+      </div>
+      <div class='reward-card'>
+        <div class='reward-bones'>200 🦴</div>
+        <div class='reward-name'>Premium Dog Food</div>
+      </div>
+      <div class='reward-card'>
+        <div class='reward-bones'>300 🦴</div>
+        <div class='reward-name'>Full Grooming</div>
+      </div>
+      <div class='reward-card'>
+        <div class='reward-bones'>400 🦴</div>
+        <div class='reward-name'>Deluxe Pet Bed</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class='action-buttons'>
+    <button class='action-btn btn-history'>Bone History</button>
+    <button class='action-btn btn-redeem'>Redeem Bones</button>
+  </div>
+</div>
+")
+
+# Render the HTML
+htmltools::div(
+  class = "pet-loyalty-program",
+  htmltools::HTML(paste(
+    pet_css,
+    pet_html
+  )),
+  htmltools::tags$script(HTML("
+    document.addEventListener('DOMContentLoaded', function() {
+      // Make reward cards interactive
+      const rewardCards = document.querySelectorAll('.reward-card');
+      rewardCards.forEach(card => {
+        card.addEventListener('click', function() {
+          const bones = this.querySelector('.reward-bones').innerText;
+          const reward = this.querySelector('.reward-name').innerText;
+          
+          // Check if user has enough bones
+          const currentBones = parseInt(document.querySelector('.current-bones span').innerText);
+          const requiredBones = parseInt(bones.split(' ')[0]);
+          
+          if (currentBones >= requiredBones) {
+            if (confirm(`Would you like to redeem ${bones} for ${reward}?`)) {
+              // Simulate redeeming the reward
+              const newBones = currentBones - requiredBones;
+              document.querySelector('.current-bones span').innerText = newBones;
+              
+              // Update progress bar
+              const percentage = Math.min((newBones / 400) * 100, 100);
+              document.querySelector('.progress-fill').style.width = percentage + '%';
+              
+              // Update active bones
+              document.querySelectorAll('.bone').forEach(bone => {
+                const boneValue = parseInt(bone.innerText);
+                if (boneValue <= newBones) {
+                  bone.classList.add('active');
+                } else {
+                  bone.classList.remove('active');
+                }
+              });
+              
+              alert(`Woof! You've successfully redeemed ${reward}!`);
+            }
+          } else {
+            alert(`Your pet needs to fetch ${requiredBones - currentBones} more bones to redeem this reward.`);
+          }
+        });
+      });
+      
+      // Make the buttons interactive
+      document.querySelector('.btn-history').addEventListener('click', function() {
+        alert('Bone History: Last earned 25 bones on 05/05/2025 at PetPalace Grooming');
+      });
+      
+      document.querySelector('.btn-redeem').addEventListener('click', function() {
+        alert('Please select a reward from the available options above to redeem your bones.');
+      });
+    });
+  "))
+)
+
+
+```
+
+
+<br>
+
+
+
+
+
+Providing rewards through customer loyalty programs is important to retain customers and encourage them to return. However, the traditional loyalty programs are becoming less effective, making companies more difficult to differentiate themselves from competitors. As McKinsey ([2021](https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/winning-in-loyalty)) showed, the loyalty program gap is much narrower than it used to be, revealing the diminishing effectiveness of traditional loyalty programs. 
+
+::: {.text-center}
+**Loyalty Program Gap Among Companies**
+:::
+
+![Source: McKinsey & Company Loyalty Survey, McKinsey, 2021](https://i.imgur.com/ZtKbu1Q.png)
+
+
+
+## Gamification as the Solution: Research Says
+So the question is, what should marketers do to make their loyalty programs more effective? A research by Hwang and Choi ([2020](https://doi.org/10.1016/j.jbusres.2019.01.031)) suggests that the conventional point-only-system is less motivated. Instead, gamification on loyalty programs is a promising solution. 
+
+Gamification is the use of game design elements (e.g., points, tasks, stories) in non-game contexts to enhance user engagement and motivation. By incorporating game-like features (such as Bingo) into loyalty programs, companies can enhance the playfulness to create a more engaging and enjoyable experience for their customers, leading to increased participation and loyalty. 
+
+::: {.text-center}
+**Gamification Elements for Loyalty Programs**
+:::
+
+![Source: [GROWAVE](https://www.growave.io/blog/gamification-loyalty-programs), 2025](https://i.imgur.com/xSZeIqa.png)
+
+::: {.text-center}
+**Benefits of Gamified Loyalty Programs**
+:::
+
+
+```{r}
+#| label: gamification benefits
+#| fig-width: 10
+#| fig-height: 9
+
+metrics <- c("User Engagement", "Customer Retention", "Brand Loyalty")
+increases <- c(47, 30, 22)
+descriptions <- c(
+  "47% increase in active engagement",
+  "30% improvement in customer retention rates",
+  "22% higher brand loyalty scores"
+)
+colors <- c("#FF6B6B", "#4ECDC4", "#FFD166")
+
+p <- plot_ly(
+  x = metrics,
+  y = increases,
+  type = "bar",
+  hovertext = descriptions,
+  hoverinfo = "text",
+  marker = list(
+    color = colors,
+    line = list(color = "#FFFFFF", width = 1.5)
+  )
+) %>%
+  layout(
+    title = NULL,  # Note the comma here
+    xaxis = list(
+      title = "",
+      tickfont = list(size = 14)
+    ),
+    yaxis = list(
+      title = "Percentage Increase (%)",
+      range = c(0, 60),
+      tickfont = list(size = 12)
+    ),
+    hoverlabel = list(
+      bgcolor = "#F8F8F8",
+      font = list(family = "Open Sans", size = 14, color = "#2A363B")
+    ),
+    annotations = list(
+      list(
+        x = 0.5,
+        y = -0.15,
+        text = "Source: Compilation of gamification research studies, 2022-2023",
+        showarrow = FALSE,
+        xref = "paper",
+        yref = "paper",
+        font = list(size = 12, color = "#555555")
+      )
+    ),
+    plot_bgcolor = "#FFFFFF",
+    paper_bgcolor = "#FFFFFF"
+  )
+
+
+#Add interactive tooltip
+
+p <- p %>% add_annotations(
+  x = metrics,
+  y = increases + 5,
+  text = paste0(increases, "%"),
+  showarrow = FALSE,
+  font = list(size = 16, color = "#2A363B", family = "Open Sans")
+)
+
+p <- p %>% config(displayModeBar = FALSE)
+
+
+p
+
+
+
+
+
+
+```
+
+Source: [GROWAVE](https://www.growave.io/blog/gamification-loyalty-programs), 2025
+
+In their study, the researchers wanted to see whether gamification makes people stick with loyalty programs, so they created a simple test. They showed 191 shoppers four different types of loyalty programs. Some people got the regular "spend money, earn points" type of program – you know, the kind where you get 5 points for every dollar you spend. Others tried a more fun, game-like program where you complete bingo challenges to earn points. They also wanted to see how the self-benefit reward may have different effects compared to altruistic rewards: some people could earn $5 off their next purchase (something for themselves), while others could earn a $5 donation to their local community (helping others). 
+
+::: {.text-center}
+**Traditional Loyalty Programs Used in the Study**
+:::
+
+::: {.text-center}
+(Left: Self-benefit rewards, right: Altruistic rewards)
+:::
+
+![Source: Hwang & Choi, 2020](https://i.imgur.com/WvmpKfG.png)
+
+::: {.text-center}
+**Gamified Loyalty Programs Used in the Study**
+:::
+
+::: {.text-center}
+(Left: Self-benefit rewards, right: Altruistic rewards)
+:::
+
+![Source: Hwang & Choi, 2020](https://i.imgur.com/GB3SVMe.png)
+
+What did they find? They discovered something pretty exciting: making loyalty programs feel more like games boosted customer loyalty by 13.2% compared to traditional points programs. And that's just in their study! In the real world, where companies can create even more engaging game elements and run programs for longer periods of time, the positive effects might be even bigger.
+
+
+The study also shows when customers become more loyal, they're also more likely to take action. People who saw the gamified programs were much more willing to actually sign up for the loyalty program and download the company's app on their phone. The game elements seem to give people that extra push to move from thinking "this brand is nice" to taking concrete steps like installing an app or joining a program, further retain consumer loyalty and drive sales.
+
+Up to this point, you may wonder why gamified loyalty programs work better than traditional ones. Here's the simple truth: we all decide whether loyalty programs are worth our money by comparing what we get versus what we have to spend. With regular points programs, people often track their spending over time and do the math—"I've spent $100 so far and only earned $5 back? That's just 5%!" This ongoing calculation can actually make customers more focused on prices or even quit the program when they realize they're not getting much value.
+
+But when there are bingo challenges or other playful elements, customers start enjoying the process itself, not just focusing on the dollars and cents.  Even better, gamification creates multiple types of rewards—not just the final $5 discount, but also the satisfaction of completing challenges, unlocking achievements, or reaching new levels along the way. The gamification may also become daily rituals, like checking in to see if they can complete a new bingo challenge or earn a new badge, motivating them to keep engaging. 
+
+
+
+
+## So...What Should Marketers Do?
+
+### 1. Adopt gamification! Now!
+Want to stand out from your competitors? Add game elements like bingo challenges to your loyalty program. The research clearly shows that gamified programs can create more engaged customers who enjoy the experience and develop stronger positive feelings toward your brand. This engagement translates directly into higher loyalty and increased willingness to download your app and actively participate in your program. The fun and interactive gamified programs provide a refreshing differentiation from the sea of similar points-based programs that customers encounter everywhere.
+
+### 2. Focus first on the self-benefit rewards
+
+When designing your gamified loyalty program, focus first on rewards that benefit the customers' self-interests (like discounts or free products). The findings show that while both self-benefit and altruistic rewards work better in gamified formats, self-oriented rewards consistently outperformed altruistic rewards that donated to the community. This aligns with what behavioral science tells us: people are primarily motivated by activities that bring them personal satisfaction and pleasure. However, if your brand values include community support, don't abandon altruistic rewards entirely! Just make sure to present them with a gamified experience rather than a conventional loyalty program. The game elements help compensate for the reduced personal benefit, making socially-responsible programs more effective than they would be in traditional formats.
+
+
+### 3. Don't know where to start? Here are some useful tips!
+
+***Plan your game elements.*** Check out the [Octalysis Framework](https://octalysisgroup.com/framework/) , which breaks down the 8 ways games motivate people. It helps you pick the right gamification directions based on your marketing strategy and guide the gamification element selection that will excite your specific customers to create added brand values.
+
+::: {.text-center}
+**Octalysis Framework**
+:::
+
+![Source: The Octalysis Group, 2025](https://i.imgur.com/21pRnNe.png)
+
+***Find easy-to-use tools.*** You don't need to build everything from scratch. Platforms like [Antavo](https://antavo.com/) and [Talon.One](https://www.talon.one/) let you easily add game features to your loyalty program without hiring a development team. You just need to type the rewards and rules, and wait for that gamified program to be launched!
+
+
+
+***Learn from success stories.*** Look at what's working for others. [Fitbit](https://community.fitbit.com/t5/Community/ct-p/EN) uses collectible badges, while [Duolingo](https://www.duolingo.com/) uses streaks and leaderboards to make language learning addictive. These real examples show how different industries make gamification work for their customers.
+
+
+## End of the Story
+
+
+Today, Louise's **"Pawsome Bingo"** has transformed her pet care loyalty program. Clients enthusiastically complete challenges like "Meet New Friend" and "Pet Massage". Participation in the program has jumped from 12% to 47%, and app downloads have increased by 38% in just three months. 
+
+"The difference is night and day." Louise shares. "Customers who never paid attention to our point systems now eagerly check in to see new bingo challenges. They're not just calculating dollar value anymore, they're having fun while building a relationship with us. One client told me she chose our daycare over a slightly cheaper competitor specifically because of our **'addictive little bingo game'**. That's when I knew we'd created something special."
+
+The lesson? Don't just reward loyalty—make loyalty rewarding.
+
+
+
+::: {.text-center}
+**Gamified Loyalty Program: Pawsome Bingo**
+:::
+
+
+
+
+```{=html}
+<style>
+  /* Base styles from your existing loyalty program */
+  .pet-loyalty {
+    font-family: 'Nunito', 'Helvetica Neue', Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    background: #f7f5f0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 2px dashed #7e5539;
+  }
+  
+  .loyalty-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .logo {
+    width: 70px;
+    height: 70px;
+    background: #7e5539; /* Brown */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+  }
+  
+  .user-info {
+    text-align: right;
+  }
+  
+  .username {
+    font-weight: bold;
+    font-size: 22px;
+    margin-bottom: 5px;
+    color: #7e5539;
+  }
+  
+  .status {
+    font-size: 16px;
+    color: #b08968;
+    font-style: italic;
+  }
+  
+  .current-bones {
+    margin: 20px 0;
+    font-size: 18px;
+  }
+  
+  .action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+  }
+  
+  .action-btn {
+    padding: 12px 25px;
+    border-radius: 30px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-history {
+    background: white;
+    color: #7e5539;
+    border: 2px solid #7e5539;
+  }
+  
+  .btn-history:hover {
+    background: #f0e6d8;
+  }
+  
+  .btn-redeem {
+    background: #7e5539;
+    color: white;
+  }
+  
+  .btn-redeem:hover {
+    background: #6a462f;
+  }
+  
+  .paw-print {
+    display: inline-block;
+    font-size: 18px;
+    transform: rotate(10deg);
+    margin-right: 5px;
+  }
+  
+  /* New Bingo Card Styles */
+  .bingo-container {
+    margin: 30px 0;
+  }
+  
+  .bingo-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #7e5539;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+  }
+  
+  .bingo-title:before, .bingo-title:after {
+    content: "🐾";
+    font-size: 24px;
+    padding: 0 10px;
+  }
+   .bingo-card {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    background: white;
+    padding: 15px;
+    border-radius: 10px
+     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border: 2px solid #dcc7ab;
+  }
+  
+  .bingo-cell {
+    position: relative;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    background: #f9f5f0;
+    border-radius: 8px;
+    border: 2px solid #dcc7ab;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    overflow: hidden;
+  }
+  
+  .bingo-cell:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(126, 85, 57, 0.2);
+  }
+  
+  .bingo-cell.completed {
+    background: #7e5539;
+    color: white;
+    border-color: #6a462f;
+  }
+  
+  .bingo-cell.completed .cell-icon {
+    transform: rotate(360deg);
+  }
+  
+  .bingo-cell.free {
+    background: #b08968;
+    color: white;
+    border-color: #7e5539;
+  }
+  
+  .cell-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+    transition: transform 0.5s ease;
+  }
+  
+  .cell-text {
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 1.2;
+  }
+  
+  .bingo-bone-reward {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #7e5539;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    z-index: 2;
+  }
+  
+  .bingo-progress {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #7e5539;
+  }
+  
+  .progress-text {
+    margin-bottom: 10px;
+  }
+  
+  .progress-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+  }
+  
+  .indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 14px;
+  }
+  
+  .indicator-count {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #f0e6d8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #7e5539;
+    margin-bottom: 5px;
+    border: 2px solid #dcc7ab;
+  }
+  
+  .completed-row {
+    background: gold;
+    color: #333;
+    border-color: #cc9900;
+  }
+   .bingo-reward-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s
+   }
+  
+  .bingo-reward-dialog.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+  
+  .reward-popup {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+  }
+  
+  .bingo-reward-dialog.visible .reward-popup {
+    transform: scale(1);
+  }
+  
+  .reward-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #7e5539;
+    margin-bottom: 15px;
+  }
+  
+  .reward-icon {
+    font-size: 60px;
+    margin: 20px 0;
+    animation: bounce 0.8s infinite alternate;
+  }
+  
+  @keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-15px); }
+  }
+  
+  .reward-description {
+    font-size: 18px;
+    margin-bottom: 25px;
+    color: #666;
+  }
+  
+  .reward-bones {
+    font-size: 24px;
+    font-weight: bold;
+    color: #7e5539;
+    margin-bottom: 25px;
+  }
+  
+  .reward-button {
+    background: #7e5539;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .reward-button:hover {
+    background: #6a462f;
+  }
+  
+  .bingo-instructions {
+    margin-top: 20px;
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    border: 2px solid #dcc7ab;
+  }
+  
+  .instructions-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #7e5539;
+  }
+  
+  .instructions-text {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+  }
+  
+  .hint-text {
+    margin-top: 10px;
+    font-style: italic;
+    font-size: 12px;
+    color: #b08968;
+  }
+  
+  .reset-bingo {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #b08968;
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  
+  .reset-bingo:hover {
+    color: #7e5539;
+  }
+  
+  /* Confetti animation */
+  @keyframes confetti-fall {
+    0% { transform: translateY(-100%) rotate(0deg); }
+    100% { transform: translateY(100vh) rotate(360deg); }
+  }
+  
+  .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background-color: #f0ad4e;
+    top: -10px;
+    z-index: 99;
+    animation: confetti-fall 5s linear infinite;
+  }
+</style>
+<div class='pet-loyalty'>
+  <div class='loyalty-header'>
+    <div class='logo'>AC</div>
+    <div class='user-info'>
+      <div class='username'>Thelma</div>
+      <div class='status'>Furever Pet Care</div>
+    </div>
+  </div>
+  
+  <div class='current-bones'>
+    <h3>You have <span id="current-bones-count" style='color: #7e5539; font-weight: bold;'>175</span> Bones</h3>
+  </div>
+  
+  <div class='bingo-container'>
+    <div class='bingo-title'>Pawsome Bingo</div>
+    
+    <div class='bingo-card' id='bingo-card'>
+      <!-- Bingo card cells will be populated by JavaScript -->
+    </div>
+    
+    <div class='bingo-progress'>
+      <div class='progress-text'>Your Bingo Progress</div>
+      <div class='progress-indicators'>
+        <div class='indicator'>
+          <div class='indicator-count' id='completed-count'>0</div>
+          <div>Completed</div>
+        </div>
+        <div class='indicator'>
+          <div class='indicator-count' id='rows-count'>0</div>
+          <div>Rows</div>
+        </div>
+        <div class='indicator'>
+          <div class='indicator-count completed-row' id='bones-earned'>0</div>
+          <div>Bones Earned</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class='bingo-instructions'>
+      <div class='instructions-title'>How to Play</div>
+      <div class='instructions-text'>
+        Complete pet care activities to mark off squares on your Bingo card. Complete a row (horizontal, vertical, or diagonal) to earn bones! Each activity you complete also earns you the bones shown in the top right of the square.
+      </div>
+      <div class='hint-text'>Psst... the center square is a free space!</div>
+      <button class='reset-bingo' id='reset-bingo'>Reset Bingo Card</button>
+    </div>
+  </div>
+  
+  <div class='action-buttons'>
+    <button class='action-btn btn-history'>Bone History</button>
+    <button class='action-btn btn-redeem'>Redeem Bones</button>
+  </div>
+  
+  <div class='bingo-reward-dialog' id='reward-dialog'>
+    <div class='reward-popup'>
+      <div class='reward-title'>BINGO!</div>
+      <div class='reward-icon'>🎉</div>
+      <div class='reward-description'>You've completed a row on your Bingo card!</div>
+      <div class='reward-bones'>+50 Bones</div>
+      <button class='reward-button' id='claim-reward'>Claim Reward</button>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Bingo activities with their respective bone rewards
+    const bingoActivities = [
+      { text: "Bath Time Fun", icon: "🛁", bones: 10 },
+      { text: "Visit the Vet", icon: "👨‍⚕️", bones: 20 },
+      { text: "Dog Park Visit", icon: "🏞️", bones: 15 },
+      { text: "Training Session", icon: "🏆", bones: 15 },
+      { text: "Paw Cleaning", icon: "🐾", bones: 5 },
+      { text: "Tooth Brushing", icon: "🦷", bones: 10 },
+      { text: "Long Walk", icon: "🚶‍♂️", bones: 10 },
+      { text: "New Toy", icon: "🧸", bones: 25 },
+      { text: "Nail Trimming", icon: "✂️", bones: 15 },
+      { text: "Healthy Treat", icon: "🦴", bones: 5 },
+      { text: "Fur Brushing", icon: "🧹", bones: 10 },
+      { text: "Photo Session", icon: "📸", bones: 5 },
+      { text: "Play Date", icon: "🐕", bones: 15 },
+      { text: "Car Ride", icon: "🚗", bones: 10 },
+      { text: "Trick Learning", icon: "🎪", bones: 20 },
+      { text: "Cuddle Time", icon: "❤️", bones: 5 },
+      { text: "Water Play", icon: "💦", bones: 10 },
+      { text: "Agility Training", icon: "🏃‍♂️", bones: 20 },
+      { text: "New Collar", icon: "📿", bones: 15 },
+      { text: "Flea Treatment", icon: "🦟", bones: 15 },
+      { text: "Hide & Seek", icon: "👁️", bones: 10 },
+      { text: "Fetch Game", icon: "🎾", bones: 10 },
+      { text: "Meet New Friend", icon: "👋", bones: 15 },
+      { text: "Pet Massage", icon: "👐", bones: 10 }
+    ];
+    
+    // Shuffle the activities
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+    
+    // Create the bingo card
+    function createBingoCard() {
+      // Clear the card
+      const bingoCard = document.getElementById('bingo-card');
+      bingoCard.innerHTML = '';
+      
+      // Get 24 random activities 
+      const shuffledActivities = shuffleArray([...bingoActivities]).slice(0, 24);
+      
+      // Create bingo cells
+      for (let i = 0; i < 25; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'bingo-cell';
+        cell.dataset.index = i;
+        
+        // Middle cell is free space
+        if (i === 12) {
+          cell.classList.add('free');
+          cell.classList.add('completed');
+          cell.innerHTML = `
+            <div class="cell-icon">🎁</div>
+            <div class="cell-text">FREE SPACE</div>
+          `;
+        } else {
+          // Get the activity for the cell
+          const activityIndex = i > 12 ? i - 1 : i;
+          const activity = shuffledActivities[activityIndex];
+           cell.innerHTML = `
+           <div class="bingo-bone-reward">${activity.bones}</div>
+            <div class="cell-icon">${activity.icon}</div>
+            <div class="cell-text">${activity.text}</div>
+          `;
+        }
+        
+        bingoCard.appendChild(cell);
+      }
+      
+      // Load completed cells from localStorage
+      loadCompletedCells();
+      // Add click event handlers to cells
+      addCellClickHandlers();
+      // Update the progress display
+      updateProgress();
+    }
+    
+    // Handle cell click event
+    function addCellClickHandlers() {
+      const cells = document.querySelectorAll('.bingo-cell:not(.free)');
+      cells.forEach(cell => {
+        cell.addEventListener('click', function() {
+          if (!this.classList.contains('completed')) {
+            // Mark as completed
+            this.classList.add('completed');
+            
+            // Save to localStorage
+            saveCompletedCells();
+            
+            // Check for bingo
+            checkForBingo();
+            
+            // Add the bone reward for completing this activity
+            if (this.querySelector('.bingo-bone-reward')) {
+              const bones = parseInt(this.querySelector('.bingo-bone-reward').textContent);
+              addBones(bones);
+            }
+            
+            // Update progress indicators
+            updateProgress();
+            
+            // Create confetti effect
+            createConfetti(10);
+          }
+        });
+      });
+    }
+    
+    // Save completed cells to localStorage
+    function saveCompletedCells() {
+      const completedIndices = [];
+      document.querySelectorAll('.bingo-cell.completed').forEach(cell => {
+        if (cell.dataset.index) {
+          completedIndices.push(cell.dataset.index);
+        }
+      });
+      localStorage.setItem('pawsomeBingoCompleted', JSON.stringify(completedIndices));
+    }
+    
+    // Load completed cells from localStorage
+    function loadCompletedCells() {
+      try {
+        const saved = localStorage.getItem('pawsomeBingoCompleted');
+        if (saved) {
+          const completedIndices = JSON.parse(saved);
+          completedIndices.forEach(index => {
+            const cell = document.querySelector(`.bingo-cell[data-index="${index}"]`);
+            if (cell) {
+              cell.classList.add('completed');
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Error loading saved bingo state:', e);
+      }
+    }
+    
+    // Check for completed rows
+    function checkForBingo() {
+      const cells = document.querySelectorAll('.bingo-cell');
+      const completedCells = Array.from(cells).map(cell => cell.classList.contains('completed'));
+      
+      let newBingos = 0;
+      
+      // Check rows
+      for (let row = 0; row < 5; row++) {
+        const rowStart = row * 5;
+        if (completedCells[rowStart] && completedCells[rowStart + 1] && completedCells[rowStart + 2] && 
+            completedCells[rowStart + 3] && completedCells[rowStart + 4]) {
+          if (!isBingoSaved('row' + row)) {
+            newBingos++;
+            saveBingo('row' + row);
+          }
+        }
+      }
+      
+      // Check columns
+      for (let col = 0; col < 5; col++) {
+        if (completedCells[col] && completedCells[col + 5] && completedCells[col + 10] && 
+            completedCells[col + 15] && completedCells[col + 20]) {
+          if (!isBingoSaved('col' + col)) {
+            newBingos++;
+            saveBingo('col' + col);
+          }
+        }
+      }
+      // Check diagonals
+      if (completedCells[0] && completedCells[6] && completedCells[12] && 
+          completedCells[18] && completedCells[24]) {
+        if (!isBingoSaved('diag1')) {
+          newBingos++;
+          saveBingo('diag1');
+        }
+      }
+      
+      if (completedCells[4] && completedCells[8] && completedCells[12] && 
+          completedCells[16] && completedCells[20]) {
+        if (!isBingoSaved('diag2')) {
+          newBingos++;
+          saveBingo('diag2');
+        }
+      }
+      
+      // If new bingos were found, show reward dialog
+      if (newBingos > 0) {
+        showRewardDialog(newBingos);
+        // 50 bones per bingo row completed
+        addBones(50 * newBingos);
+      }
+    }
+    
+    // Check if a bingo line has already been saved
+    function isBingoSaved(bingoId) {
+      try {
+        const savedBingos = JSON.parse(localStorage.getItem('pawsomeBingos') || '[]');
+        return savedBingos.includes(bingoId);
+      } catch (e) {
+        return false;
+      }
+    }
+    
+    // Save a completed bingo line
+    function saveBingo(bingoId) {
+      try {
+        const savedBingos = JSON.parse(localStorage.getItem('pawsomeBingos') || '[]');
+        savedBingos.push(bingoId);
+        localStorage.setItem('pawsomeBingos', JSON.stringify(savedBingos));
+      } catch (e) {
+        console.error('Error saving bingo:', e);
+      }
+    }
+    
+    // Show the reward dialog
+    function showRewardDialog(bingoCount) {
+      const dialog = document.getElementById('reward-dialog');
+      const bonesText = dialog.querySelector('.reward-bones');
+      
+      bonesText.textContent = `+${50 * bingoCount} Bones`;
+      
+      if (bingoCount > 1) {
+        dialog.querySelector('.reward-description').textContent = 
+          `You've completed ${bingoCount} rows on your Bingo card!`;
+      }
+      
+      dialog.classList.add('visible');
+      createConfetti(50);
+    }
+    
+    // Update progress indicators
+    function updateProgress() {
+      const completedCount = document.querySelectorAll('.bingo-cell.completed').length;
+      document.getElementById('completed-count').textContent = completedCount;
+      
+      // Count completed rows
+      try {
+        const savedBingos = JSON.parse(localStorage.getItem('pawsomeBingos') || '[]');
+        document.getElementById('rows-count').textContent = savedBingos.length;
+        document.getElementById('bones-earned').textContent = savedBingos.length * 50;
+      } catch (e) {
+        document.getElementById('rows-count').textContent = '0';
+        document.getElementById('bones-earned').textContent = '0';
+      }
+    }
+    
+    // Add bones to the user's account
+    function addBones(amount) {
+      const bonesElement = document.getElementById('current-bones-count');
+      const currentBones = parseInt(bonesElement.textContent);
+      const newTotal = currentBones + amount;
+      
+      // Animate the count up
+      animateCounter(bonesElement, currentBones, newTotal, 1000);
+      
+      // Save to localStorage
+      localStorage.setItem('pawsomeBones', newTotal);
+    }
+    
+    // Animate a counter from start to end value
+    function animateCounter(element, start, end, duration) {
+      const increment = (end - start) / (duration / 16);
+      let current = start;
+      
+      const timer = setInterval(() => {
+      current += increment;
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+          clearInterval(timer);
+          element.textContent = end;
+        } else {
+          element.textContent = Math.round(current);
+        }
+      }, 16);
+    }
+    
+    // Create confetti effect
+    function createConfetti(count) {
+      for (let i = 0; i < count; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        
+        // Random positioning
+        confetti.style.left = Math.random() * 100 + 'vw';
+        
+        // Random color
+        const colors = ['#ffcc00', '#ff69b4', '#00c8ff', '#7dff00', '#ff7d00'];
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Random size
+        const size = Math.random() * 10 + 5;
+        confetti.style.width = size + 'px';
+        confetti.style.height = size + 'px';
+        
+        // Random rotation
+        confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+        
+        // Random shape
+        if (Math.random() > 0.5) {
+          confetti.style.borderRadius = '50%';
+        }
+        
+        // Random animation duration
+        confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+        
+        document.body.appendChild(confetti);
+        
+        // Remove after animation
+        setTimeout(() => {
+          confetti.remove();
+        }, 5000);
+      }
+    }
+    
+    // Initialize the bingo card
+    createBingoCard();
+    
+    // Load saved bones count
+    try {
+      const savedBones = localStorage.getItem('pawsomeBones');
+      if (savedBones) {
+        document.getElementById('current-bones-count').textContent = savedBones;
+      }
+    } catch (e) {
+      console.error('Error loading saved bones:', e);
+    }
+    
+    // Handle claim reward button
+    document.getElementById('claim-reward').addEventListener('click', function() {
+      document.getElementById('reward-dialog').classList.remove('visible');
+    });
+    
+    // Handle reset bingo button
+    document.getElementById('reset-bingo').addEventListener('click', function() {
+      if (confirm('Are you sure you want to reset your bingo card? Your bones balance will not be affected, but your progress will be lost.')) {
+        localStorage.removeItem('pawsomeBingoCompleted');
+        localStorage.removeItem('pawsomeBingos');
+        createBingoCard();
+      }
+    });
+    
+    // Make the buttons interactive from the original loyalty program
+    document.querySelector('.btn-history').addEventListener('click', function() {
+      alert('Bone History: Last earned 25 bones on 05/05/2025 at PetPalace Grooming plus Bingo rewards!');
+    });
+    
+    document.querySelector('.btn-redeem').addEventListener('click', function() {
+      alert('Please visit the Rewards section to redeem your bones for fabulous pet gifts!');
+    });
+  });
+</script>
+
+
+
+```
+
+
+
+
+## Source Paper
+
+Hwang, J., & Choi, L. (2020). Having fun while receiving rewards?: Exploration of gamification in loyalty programs for consumer loyalty. *Journal of Business Research, 106*, 365-376. [https://doi.org/10.1016/j.jbusres.2019.01.031](https://doi.org/10.1016/j.jbusres.2019.01.031)
+
+
+*This article summarizes research findings and provides practical applications for business professionals. For the complete methodology and detailed results, please refer to the original research paper.*
+
+
+
+
+
+
+
+
+
+
+
+
